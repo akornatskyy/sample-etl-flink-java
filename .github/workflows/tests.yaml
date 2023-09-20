@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  schedule:
+    - cron: "0 4 * * 0"  # At 04:00 on Sunday.
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        jdk: [8, 11]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.jdk }}
+          distribution: 'adopt'
+          cache: maven
+      - run: mvn -T1C --batch-mode verify
