@@ -1,5 +1,7 @@
 # sample-etl-flink-java
 
+[![tests](https://github.com/akornatskyy/sample-etl-flink-java/actions/workflows/tests.yaml/badge.svg)](https://github.com/akornatskyy/sample-etl-flink-java/actions/workflows/tests.yaml)
+
 The sample ingests multiline gzipped files of popular books into postgres.
 
 ## Prepare
