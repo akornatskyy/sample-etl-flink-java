@@ -1,40 +1,44 @@
 package sample.shared.fs;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
 import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
 
 public final class PathScanner {
-  private final Set<String> extensions;
+  private final Predicate<Path> fileFilter;
 
-  public PathScanner(String ...extensions) {
-    this.extensions = new HashSet<>();
-    this.extensions.addAll(Arrays.asList(extensions));
+  public PathScanner(Predicate<Path> fileFilter) {
+    this.fileFilter = fileFilter;
   }
 
-  public Stream<Path> scan(Path rootPath) throws IOException {
-    FileSystem fs = rootPath.getFileSystem();
-    FileStatus[] statuses = fs.listStatus(rootPath);
-    return Arrays.stream(statuses)
-        .flatMap(f -> {
-          if (f.isDir()) {
-            try {
-              return scan(f.getPath());
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          }
+  public Collection<Path> scan(Path... paths) throws IOException {
+    List<Path> result = new ArrayList<>();
+    for (Path p : paths) {
+      FileSystem fs = p.getFileSystem();
+      scan(fs.getFileStatus(p), fs, result);
+    }
 
-          return Stream.of(f.getPath());
-        })
-        .filter(path -> {
-          String fullPath = path.getPath();
-          return extensions.stream().anyMatch(fullPath::endsWith);
-        });
+    return result;
+  }
+
+  private void scan(FileStatus fileStatus, FileSystem fs, List<Path> result)
+      throws IOException {
+    Path p = fileStatus.getPath();
+    if (fileStatus.isDir()) {
+      for (FileStatus f : fs.listStatus(p)) {
+        scan(f, fs, result);
+      }
+
+      return;
+    }
+
+    if (fileFilter.test(p)) {
+      result.add(p);
+    }
   }
 }
