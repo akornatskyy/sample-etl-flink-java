@@ -11,7 +11,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sample.doman.Book;
+import sample.domain.Book;
 import sample.operators.BookDeserializer;
 import sample.sinks.BookJdbcSink;
 import sample.sources.BookFileSource;
