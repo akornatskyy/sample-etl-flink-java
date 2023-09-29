@@ -1,4 +1,4 @@
-package sample.sources;
+package sample.basic.sources;
 
 import java.io.IOException;
 import org.apache.flink.connector.file.src.FileSource;
@@ -6,8 +6,8 @@ import org.apache.flink.connector.file.src.reader.TextLineInputFormat;
 import org.apache.flink.core.fs.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sample.shared.fs.FileExtensionFilter;
-import sample.shared.fs.PathScanner;
+import sample.basic.shared.fs.FileExtensionFilter;
+import sample.basic.shared.fs.PathScanner;
 
 public final class BookFileSource {
   private static final Logger LOGGER = LogManager.getLogger();

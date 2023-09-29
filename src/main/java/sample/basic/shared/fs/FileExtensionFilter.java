@@ -1,4 +1,4 @@
-package sample.shared.fs;
+package sample.basic.shared.fs;
 
 import java.util.Arrays;
 import java.util.List;

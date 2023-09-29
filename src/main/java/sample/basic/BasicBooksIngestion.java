@@ -1,4 +1,4 @@
-package sample;
+package sample.basic;
 
 import java.util.Optional;
 import org.apache.flink.api.common.JobExecutionResult;
@@ -11,18 +11,18 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sample.domain.Book;
-import sample.operators.BookDeserializer;
-import sample.sinks.BookJdbcSink;
-import sample.sources.BookFileSource;
+import sample.basic.domain.Book;
+import sample.basic.operators.BookDeserializer;
+import sample.basic.sinks.BookJdbcSink;
+import sample.basic.sources.BookFileSource;
 
-public class DataStreamJob {
+public final class BasicBooksIngestion {
   private static final Logger LOGGER = LogManager.getLogger();
 
   private final Source<String, ?, ?> source;
   private final SinkFunction<Book> sink;
 
-  public DataStreamJob(Source<String, ?, ?> source, SinkFunction<Book> sink) {
+  public BasicBooksIngestion(Source<String, ?, ?> source, SinkFunction<Book> sink) {
     this.source = source;
     this.sink = sink;
   }
@@ -36,7 +36,7 @@ public class DataStreamJob {
     // make parameters available in the web interface
     env.getConfig().setGlobalJobParameters(params);
 
-    DataStreamJob job = new DataStreamJob(
+    BasicBooksIngestion job = new BasicBooksIngestion(
         BookFileSource.forTextLineInputFormat(
             Optional.ofNullable(params.get("input-dir")).orElse("./"),
             ".json.gz"),

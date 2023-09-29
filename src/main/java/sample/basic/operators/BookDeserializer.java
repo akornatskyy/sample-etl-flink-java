@@ -1,11 +1,11 @@
-package sample.operators;
+package sample.basic.operators;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import sample.domain.Book;
+import sample.basic.domain.Book;
 
 public final class BookDeserializer implements MapFunction<String, Book> {
   private static final ObjectMapper MAPPER = new ObjectMapper()

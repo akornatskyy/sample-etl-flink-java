@@ -1,4 +1,4 @@
-package sample.sinks;
+package sample.basic.sinks;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -12,7 +12,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonInc
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
-import sample.domain.Book;
+import sample.basic.domain.Book;
 
 public final class BookJdbcSink {
   private static final ObjectMapper MAPPER = new ObjectMapper()

@@ -1,4 +1,4 @@
-package sample.domain;
+package sample.basic.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
