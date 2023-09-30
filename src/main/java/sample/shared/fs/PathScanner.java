@@ -1,4 +1,4 @@
-package sample.basic.shared.fs;
+package sample.shared.fs;
 
 import java.io.IOException;
 import java.util.ArrayList;
