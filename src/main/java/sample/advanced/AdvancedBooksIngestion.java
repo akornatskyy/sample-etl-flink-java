@@ -14,20 +14,22 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sample.shared.operators.TextLineInput;
+import sample.advanced.domain.IngestionSource;
+import sample.advanced.operators.AddIngestionLogEntryJdbcRichMapFunction;
+import sample.advanced.operators.BookJsonDeserializerMapFunction;
+import sample.advanced.operators.TextLineReaderFlatMapFunction;
+import sample.advanced.sinks.BookIngestionJdbcSink;
 import sample.basic.domain.Book;
-import sample.basic.operators.BookDeserializer;
 import sample.shared.fs.FileExtensionFilter;
 import sample.shared.fs.PathScanner;
-import sample.basic.sinks.BookJdbcSink;
 
 public final class AdvancedBooksIngestion {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  private final Params params;
+  private final Options options;
 
   public AdvancedBooksIngestion(ParameterTool params) {
-    this.params = new Params(params);
+    this.options = new Options(params);
   }
 
   public static void main(String[] args) throws Exception {
@@ -51,13 +53,17 @@ public final class AdvancedBooksIngestion {
     ingestion.addBooksIngestion(env);
   }
 
-  public static void addBooksIngestion(
+  public void addBooksIngestion(
       SingleOutputStreamOperator<Path> source,
-      SinkFunction<Book> sink) {
+      SinkFunction<IngestionSource<Book>> sink) {
     source
-        .flatMap(new TextLineInput())
+        .map(new AddIngestionLogEntryJdbcRichMapFunction(
+            options.jdbc.connection))
+        .setParallelism(1)
+        .name("add ingestion log entry")
+        .flatMap(new TextLineReaderFlatMapFunction())
         .name("read text lines")
-        .map(new BookDeserializer())
+        .map(new BookJsonDeserializerMapFunction())
         .name("parse book from a json line")
         .addSink(sink)
         .name("persist to storage");
@@ -74,36 +80,46 @@ public final class AdvancedBooksIngestion {
       StreamExecutionEnvironment env) throws IOException {
     PathScanner pathScanner = new PathScanner(
         new FileExtensionFilter(".json.gz"));
-    Collection<Path> paths = pathScanner.scan(
-        new Path(params.inputDir));
+    Collection<Path> paths = pathScanner.scan(options.inputDir);
     LOGGER.info("paths found: {}", paths.size());
-    return (DataStreamSource<Path>)env.fromCollection(paths)
+    return (DataStreamSource<Path>) env.fromCollection(paths)
         .name("read source paths");
   }
 
-  public SinkFunction<Book> createSinkFunction() {
-    return BookJdbcSink.sink(
-        JdbcExecutionOptions.builder()
+  public SinkFunction<IngestionSource<Book>> createSinkFunction() {
+    return BookIngestionJdbcSink.sink(
+        options.jdbc.execution,
+        options.jdbc.connection);
+  }
+
+  public static class Options {
+    public final Path inputDir;
+    public final Jdbc jdbc;
+
+    Options(ParameterTool params) {
+      inputDir = new Path(
+          Optional.ofNullable(params.get("input-dir")).orElse("./"));
+      jdbc = new Jdbc(params);
+    }
+
+    public static class Jdbc {
+      public final JdbcConnectionOptions connection;
+      public final JdbcExecutionOptions execution;
+
+      Jdbc(ParameterTool params) {
+        connection = new JdbcConnectionOptions
+            .JdbcConnectionOptionsBuilder()
+            .withUrl(
+                Optional.ofNullable(params.get("db-url")).orElse(
+                    "jdbc:postgresql://localhost:5432/books?user=postgres"))
+            .withDriverName("org.postgresql.Driver")
+            .build();
+        execution = JdbcExecutionOptions.builder()
             .withBatchSize(100)
             .withBatchIntervalMs(200)
             .withMaxRetries(5)
-            .build(),
-        new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
-            .withUrl(params.dbUrl)
-            .withDriverName("org.postgresql.Driver")
-            .withUsername("postgres")
-            .build());
-  }
-
-  public static class Params {
-    public final String inputDir;
-    public final String dbUrl;
-
-    Params(ParameterTool params) {
-      inputDir = Optional.ofNullable(params.get("input-dir"))
-          .orElse("./");
-      dbUrl = Optional.ofNullable(params.get("db-url"))
-          .orElse("jdbc:postgresql://localhost:5432/books");
+            .build();
+      }
     }
   }
 }

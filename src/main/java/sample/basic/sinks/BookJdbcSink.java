@@ -73,7 +73,7 @@ public final class BookJdbcSink {
     );
   }
 
-  static void accept(PreparedStatement s, Book b) throws SQLException {
+  public static void accept(PreparedStatement s, Book b) throws SQLException {
     s.setString(1, b.asin);
     s.setString(2, b.isbn);
     s.setInt(3, b.answeredQuestions);
