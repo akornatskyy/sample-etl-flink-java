@@ -3,25 +3,36 @@ package sample.advanced.operators;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.util.Preconditions;
 import sample.advanced.domain.IngestionSource;
 import sample.shared.jdbc.PreparedStatementCommand;
 
-import javax.annotation.Nonnull;
-
-public final class AddIngestionLogEntryJdbcRichMapFunction
-    extends RichMapFunction<Path, IngestionSource<Path>> {
+public final class AddIngestionLogEntryJdbcOperator
+    extends RichMapFunction<Path, IngestionSource<Path>>
+    implements Function<
+    SingleOutputStreamOperator<Path>,
+    SingleOutputStreamOperator<IngestionSource<Path>>> {
 
   private final JdbcConnectionOptions options;
 
   private transient PreparedStatementCommand preparedStatementCommand;
 
-  public AddIngestionLogEntryJdbcRichMapFunction(
-      @Nonnull JdbcConnectionOptions options) {
+  public AddIngestionLogEntryJdbcOperator(JdbcConnectionOptions options) {
     this.options = options;
+  }
+
+  @Override
+  public SingleOutputStreamOperator<IngestionSource<Path>> apply(
+      SingleOutputStreamOperator<Path> in) {
+    return in
+        .map(this)
+        .setParallelism(1)
+        .name("add ingestion log entry");
   }
 
   @Override
