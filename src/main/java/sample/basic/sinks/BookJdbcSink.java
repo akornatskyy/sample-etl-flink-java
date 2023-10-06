@@ -5,20 +5,84 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.function.Function;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
 import org.apache.flink.connector.jdbc.JdbcSink;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.streaming.api.datastream.DataStreamSink;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import sample.basic.domain.Book;
 
-public final class BookJdbcSink {
+public final class BookJdbcSink
+    implements
+    Function<
+        SingleOutputStreamOperator<Book>,
+        DataStreamSink<Book>> {
+
   private static final ObjectMapper MAPPER = new ObjectMapper()
       .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-  public static SinkFunction<Book> sink(
+  private final JdbcExecutionOptions executionOptions;
+  private final JdbcConnectionOptions connectionOptions;
+
+  public BookJdbcSink(
+      JdbcExecutionOptions executionOptions,
+      JdbcConnectionOptions connectionOptions) {
+    this.executionOptions = executionOptions;
+    this.connectionOptions = connectionOptions;
+  }
+
+  public static void accept(PreparedStatement s, Book b) throws SQLException {
+    s.setString(1, b.asin);
+    s.setString(2, b.isbn);
+    s.setInt(3, b.answeredQuestions);
+    s.setString(4, b.availability);
+    s.setString(5, b.brand);
+    s.setString(6, b.currency);
+    s.setDate(7, b.dateFirstAvailable != null
+                 ? Date.valueOf(b.dateFirstAvailable) : null);
+    Connection connection = s.getConnection();
+    s.setArray(8, connection.createArrayOf("varchar", b.delivery.toArray()));
+    s.setString(9, b.description);
+    s.setBigDecimal(10, b.discount);
+    s.setString(11, b.domain);
+    s.setArray(12, connection.createArrayOf("varchar", b.features.toArray()));
+    s.setBigDecimal(13, b.finalPrice);
+    s.setObject(14, asJsonString(b.formats));
+    s.setString(15, b.imageUrl);
+    s.setInt(16, b.imagesCount);
+    s.setBigDecimal(17, b.initialPrice);
+    s.setString(18, b.itemWeight);
+    s.setString(19, b.manufacturer);
+    s.setString(20, b.modelNumber);
+    s.setBoolean(21, b.plusContent);
+    s.setString(22, b.productDimensions);
+    s.setString(23, b.rating);
+    s.setInt(24, b.reviewsCount);
+    s.setInt(25, b.rootBsRank);
+    s.setString(26, b.sellerId);
+    s.setString(27, b.sellerName);
+    s.setTimestamp(28, Timestamp.from(b.timestamp));
+    s.setString(29, b.title);
+    s.setString(30, b.url);
+    s.setBoolean(31, b.video);
+    s.setInt(32, b.videoCount);
+    s.setArray(33, connection.createArrayOf("varchar", b.categories.toArray()));
+    s.setObject(34, asJsonString(b.bestSellersRank));
+  }
+
+  @Override
+  public DataStreamSink<Book> apply(SingleOutputStreamOperator<Book> in) {
+    return in
+        .addSink(sink(executionOptions, connectionOptions))
+        .name("persist to storage");
+  }
+
+  static SinkFunction<Book> sink(
       JdbcExecutionOptions executionOptions,
       JdbcConnectionOptions connectionOptions) {
     return JdbcSink.sink(
@@ -71,45 +135,6 @@ public final class BookJdbcSink {
         executionOptions,
         connectionOptions
     );
-  }
-
-  public static void accept(PreparedStatement s, Book b) throws SQLException {
-    s.setString(1, b.asin);
-    s.setString(2, b.isbn);
-    s.setInt(3, b.answeredQuestions);
-    s.setString(4, b.availability);
-    s.setString(5, b.brand);
-    s.setString(6, b.currency);
-    s.setDate(7, b.dateFirstAvailable != null
-                 ? Date.valueOf(b.dateFirstAvailable) : null);
-    Connection connection = s.getConnection();
-    s.setArray(8, connection.createArrayOf("varchar", b.delivery.toArray()));
-    s.setString(9, b.description);
-    s.setBigDecimal(10, b.discount);
-    s.setString(11, b.domain);
-    s.setArray(12, connection.createArrayOf("varchar", b.features.toArray()));
-    s.setBigDecimal(13, b.finalPrice);
-    s.setObject(14, asJsonString(b.formats));
-    s.setString(15, b.imageUrl);
-    s.setInt(16, b.imagesCount);
-    s.setBigDecimal(17, b.initialPrice);
-    s.setString(18, b.itemWeight);
-    s.setString(19, b.manufacturer);
-    s.setString(20, b.modelNumber);
-    s.setBoolean(21, b.plusContent);
-    s.setString(22, b.productDimensions);
-    s.setString(23, b.rating);
-    s.setInt(24, b.reviewsCount);
-    s.setInt(25, b.rootBsRank);
-    s.setString(26, b.sellerId);
-    s.setString(27, b.sellerName);
-    s.setTimestamp(28, Timestamp.from(b.timestamp));
-    s.setString(29, b.title);
-    s.setString(30, b.url);
-    s.setBoolean(31, b.video);
-    s.setInt(32, b.videoCount);
-    s.setArray(33, connection.createArrayOf("varchar", b.categories.toArray()));
-    s.setObject(34, asJsonString(b.bestSellersRank));
   }
 
   static <T> String asJsonString(T input) {
