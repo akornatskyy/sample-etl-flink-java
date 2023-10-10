@@ -44,6 +44,14 @@ public final class PreparedStatementCommand implements AutoCloseable {
     return statement;
   }
 
+  public boolean isValid() {
+    try {
+      return statement != null && statement.getConnection().isValid(1000);
+    } catch (SQLException ex) {
+      throw new IllegalStateException("Failed to reconnect", ex);
+    }
+  }
+
   @Override
   public void close() {
     if (statement != null) {
