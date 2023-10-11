@@ -66,7 +66,7 @@ public final class BasicBooksIngestion
         .apply(source);
   }
 
-  public static class Options {
+  static class Options {
     public final Path inputDir;
     public final Options.Jdbc jdbc;
 
@@ -76,7 +76,7 @@ public final class BasicBooksIngestion
       jdbc = new Options.Jdbc(params);
     }
 
-    public static class Jdbc {
+    static class Jdbc {
       public final JdbcConnectionOptions connection;
       public final JdbcExecutionOptions execution;
 

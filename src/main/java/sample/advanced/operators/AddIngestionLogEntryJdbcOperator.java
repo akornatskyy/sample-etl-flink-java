@@ -8,6 +8,7 @@ import java.util.function.Function;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.util.Preconditions;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +22,7 @@ import sample.shared.jdbc.PreparedStatementCommand;
 public final class AddIngestionLogEntryJdbcOperator
     extends RichMapFunction<Path, IngestionSource<Path>>
     implements Function<
-    SingleOutputStreamOperator<Path>,
+    DataStream<Path>,
     SingleOutputStreamOperator<IngestionSource<Path>>> {
 
   private static final Logger LOGGER = LogManager.getLogger();
@@ -45,7 +46,7 @@ public final class AddIngestionLogEntryJdbcOperator
 
   @Override
   public SingleOutputStreamOperator<IngestionSource<Path>> apply(
-      SingleOutputStreamOperator<Path> in) {
+      DataStream<Path> in) {
     return in
         .map(this)
         .setParallelism(1)
@@ -86,8 +87,7 @@ public final class AddIngestionLogEntryJdbcOperator
     }
   }
 
-  private PreparedStatement getPreparedStatement()
-      throws SQLException, ClassNotFoundException {
+  private PreparedStatement getPreparedStatement() throws SQLException {
     if (preparedStatementCommand == null) {
       preparedStatementCommand = new PreparedStatementCommand(
           "INSERT INTO ingestion_log_entry (path, status_id)" +

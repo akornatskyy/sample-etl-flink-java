@@ -12,10 +12,12 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 @NotThreadSafe
 public final class PreparedStatementCommand implements AutoCloseable {
+
+  private static Class<?> LOADED_DRIVER_CLASS;
+
   private final String sql;
   private final JdbcConnectionOptions options;
 
-  private Class<?> loadedDriverClass;
   private PreparedStatement statement;
 
   public PreparedStatementCommand(
@@ -23,17 +25,24 @@ public final class PreparedStatementCommand implements AutoCloseable {
       @Nonnull JdbcConnectionOptions options) {
     this.sql = sql;
     this.options = options;
-  }
-
-  public @Nonnull PreparedStatement getPreparedStatement()
-      throws SQLException, ClassNotFoundException {
-    if (statement != null) {
-      return statement;
-    }
 
     String driverName = options.getDriverName();
-    if (driverName != null && loadedDriverClass == null) {
-      loadedDriverClass = Class.forName(driverName);
+    if (driverName != null && LOADED_DRIVER_CLASS == null) {
+      synchronized (JdbcConnectionOptions.class) {
+        if (LOADED_DRIVER_CLASS == null) {
+          try {
+            LOADED_DRIVER_CLASS = Class.forName(driverName);
+          } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    }
+  }
+
+  public PreparedStatement getPreparedStatement() throws SQLException {
+    if (statement != null) {
+      return statement;
     }
 
     Connection connection = DriverManager.getConnection(

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import org.apache.flink.core.fs.Path;
 
+import javax.annotation.Nonnull;
+
 public final class FileExtensionFilter implements Predicate<Path> {
   private final List<String> extensions;
 
@@ -13,7 +15,7 @@ public final class FileExtensionFilter implements Predicate<Path> {
   }
 
   @Override
-  public boolean test(Path path) {
+  public boolean test(@Nonnull Path path) {
     String p = path.getPath();
     return extensions.stream().anyMatch(p::endsWith);
   }

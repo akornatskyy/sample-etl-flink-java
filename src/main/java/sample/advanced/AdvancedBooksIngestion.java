@@ -71,7 +71,7 @@ public final class AdvancedBooksIngestion
         .apply(source);
   }
 
-  public static class Options {
+  static class Options {
     public final Path inputDir;
     public final Options.Jdbc jdbc;
 
@@ -81,7 +81,7 @@ public final class AdvancedBooksIngestion
       jdbc = new Options.Jdbc(params);
     }
 
-    public static class Jdbc {
+    static class Jdbc {
       public final JdbcConnectionOptions connection;
       public final JdbcExecutionOptions execution;
 

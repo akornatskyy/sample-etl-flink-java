@@ -6,8 +6,8 @@ import java.util.function.Function;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
 import org.apache.flink.connector.jdbc.JdbcSink;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import sample.advanced.domain.IngestionSource;
 import sample.basic.domain.Book;
@@ -16,7 +16,7 @@ import sample.basic.sinks.BookJdbcSink;
 public final class BookIngestionJdbcSink
     implements
     Function<
-        SingleOutputStreamOperator<IngestionSource<Book>>,
+        DataStream<IngestionSource<Book>>,
         DataStreamSink<IngestionSource<Book>>> {
 
   private final JdbcExecutionOptions executionOptions;
@@ -30,7 +30,8 @@ public final class BookIngestionJdbcSink
   }
 
   @Override
-  public DataStreamSink<IngestionSource<Book>> apply(SingleOutputStreamOperator<IngestionSource<Book>> in) {
+  public DataStreamSink<IngestionSource<Book>> apply(
+      DataStream<IngestionSource<Book>> in) {
     return in
         .addSink(sink(executionOptions, connectionOptions))
         .name("persist to storage");

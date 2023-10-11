@@ -12,16 +12,14 @@ import org.apache.flink.connector.jdbc.JdbcSink;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import sample.basic.domain.Book;
 
 public final class BookJdbcSink
     implements
-    Function<
-        SingleOutputStreamOperator<Book>,
-        DataStreamSink<Book>> {
+    Function<DataStream<Book>, DataStreamSink<Book>> {
 
   private static final ObjectMapper MAPPER = new ObjectMapper()
       .setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -76,7 +74,7 @@ public final class BookJdbcSink
   }
 
   @Override
-  public DataStreamSink<Book> apply(SingleOutputStreamOperator<Book> in) {
+  public DataStreamSink<Book> apply(DataStream<Book> in) {
     return in
         .addSink(sink(executionOptions, connectionOptions))
         .name("persist to storage");

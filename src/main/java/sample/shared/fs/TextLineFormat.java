@@ -9,6 +9,8 @@ import org.apache.flink.connector.file.src.util.Utils;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.Path;
 
+import javax.annotation.Nonnull;
+
 public final class TextLineFormat {
   public static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
@@ -18,11 +20,11 @@ public final class TextLineFormat {
     this(DEFAULT_CHARSET_NAME);
   }
 
-  public TextLineFormat(String charsetName) {
+  public TextLineFormat(@Nonnull String charsetName) {
     this.charsetName = charsetName;
   }
 
-  public BufferedReader createReader(Path p) throws IOException {
+  public BufferedReader createReader(@Nonnull Path p) throws IOException {
     final InflaterInputStreamFactory<?> deCompressor =
         StandardDeCompressors.getDecompressorForFileName(p.getPath());
     final FSDataInputStream stream = p.getFileSystem().open(p);

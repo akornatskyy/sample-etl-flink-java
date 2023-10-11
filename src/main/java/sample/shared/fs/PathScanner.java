@@ -9,14 +9,16 @@ import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
 
+import javax.annotation.Nonnull;
+
 public final class PathScanner {
   private final Predicate<Path> fileFilter;
 
-  public PathScanner(Predicate<Path> fileFilter) {
+  public PathScanner(@Nonnull Predicate<Path> fileFilter) {
     this.fileFilter = fileFilter;
   }
 
-  public Collection<Path> scan(Path... paths) throws IOException {
+  public Collection<Path> scan(@Nonnull Path... paths) throws IOException {
     List<Path> result = new ArrayList<>();
     for (Path p : paths) {
       FileSystem fs = p.getFileSystem();
