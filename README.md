@@ -4,6 +4,42 @@
 
 The sample ingests multiline gzipped files of popular books into postgres.
 
+## Prerequisites
+
+Ensure JDK 8 or 11 is installed in your system:
+
+```sh
+java -version
+```
+
+Flink [runs](https://nightlies.apache.org/flink/flink-docs-stable/docs/try-flink/local_installation/)
+on UNIX-like environments, for Windows install
+[cygwin](https://www.cygwin.com/) (include *mintty* and *netcat* packages)
+to emulate linux commands or use WSL (note, *bash for windows* doesn't work).
+
+Ensure the following (file `~/.bash_profile`):
+
+```sh
+# ignore windows line endings (skip \r)
+export SHELLOPTS
+set -o igncr
+```
+
+Update the number of task slots that TaskManager offers and add id
+(file `conf/flink-conf.yaml`):
+
+```yaml
+taskmanager.numberOfTaskSlots: 4
+taskmanager.resource-id: local
+```
+
+Start cluster and navigate to the web UI at
+[http://localhost:8081](http://localhost:8081):
+
+```sh
+start-cluster.sh
+```
+
 ## Prepare
 
 Download and prepare dataset (as a multiline JSON file):
