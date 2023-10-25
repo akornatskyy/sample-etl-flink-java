@@ -12,6 +12,7 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import sample.basic.domain.Book;
 import sample.basic.operators.BookJsonDeserializerOperator;
+import sample.basic.operators.BookValidatorOperator;
 import sample.basic.sinks.BookJdbcSink;
 import sample.basic.sources.BookDataStreamSource;
 
@@ -36,6 +37,9 @@ public final class BooksIngestionStream
   public void accept(StreamExecutionEnvironment env) {
     new BookDataStreamSource(options.inputDir)
         .andThen(this)
+        .andThen(new ErrorStateSideOutputDataStream<>(
+            options.jdbc.execution,
+            options.jdbc.connection))
         .andThen(new BookJdbcSink(
             options.jdbc.execution,
             options.jdbc.connection))
@@ -50,6 +54,7 @@ public final class BooksIngestionStream
     // spread across available task slots), consider to rebalance source
     // (e.g. `source.rebalance()`).
     return new BookJsonDeserializerOperator()
+        .andThen(new BookValidatorOperator())
         .apply(source);
   }
 

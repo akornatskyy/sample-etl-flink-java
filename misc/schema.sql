@@ -36,6 +36,15 @@ create table book (
   primary key (asin)
 );
 
+create table error_state (
+  id serial,
+  domain varchar,
+  reference varchar,
+  violations jsonb,
+  primary key (id)
+);
+
+
 -- drop table ingestion_log_entry_status;
 create table ingestion_log_entry_status (
   id int,
