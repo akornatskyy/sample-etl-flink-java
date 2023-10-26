@@ -1,6 +1,7 @@
 package sample.basic;
 
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,10 @@ public final class BasicBooksIngestion {
   public static void main(String[] args) throws Exception {
     StreamExecutionEnvironment env = StreamExecutionEnvironment
         .getExecutionEnvironment();
+    ParameterTool params = ParameterTool.fromArgs(args);
+    if (params.getBoolean("disable-operator-chaining", false)) {
+      env.disableOperatorChaining();
+    }
 
     BooksIngestionStream
         .getStream(BooksIngestionStream.Options.fromArgs(args))

@@ -82,6 +82,13 @@ flink run -p 4 target/sample-etl-flink-java-1.0-SNAPSHOT.jar \
   --input-dir ./ --db-url jdbc:postgresql://localhost:5432/books
 ```
 
+Use *--disable-operator-chaining true* to see expanded execution graph.
+
+```sh
+flink run -p 4 target/sample-etl-flink-java-1.0-SNAPSHOT.jar \
+  --disable-operator-chaining true
+```
+
 Running from IntelliJ IDEA requires to edit run configuration to add
 dependencies of *provided* scope to classpath.
 
